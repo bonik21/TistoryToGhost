@@ -37,9 +37,9 @@
 
 # 필요한 패키지 설치
 ```
-pip install requests, beautifulsoup4, pyjwt
+pip install -r requirements.txt
 ```
 또는
 ```
-pip install -r requirements.txt
+pip install requests, beautifulsoup4, pyjwt
 ```
