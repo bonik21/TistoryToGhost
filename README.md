@@ -15,6 +15,7 @@
 - Settings - ADVANCED - Integrations
 - `+ Add custom integration` 클릭
 - 생성된 `Conten API key`, `Admin API key`, API URL'을 TistoryToGhost.ini에 입력
+- `Content API key`로 콘텐츠를 불러올 수는 있지만 그것을 작성할 수는 없음.
 
 
 # 주의
