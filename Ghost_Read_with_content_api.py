@@ -81,20 +81,20 @@ def read_key_list_ghost_content():
 # 아래는 사용 예
 
 # # 모든 고스트 콘텐츠 확인
-# all_ghost_content = Ghost_Read_with_content_api.read_all_ghost_content()
+# all_ghost_content = read_all_ghost_content()
 # print(all_ghost_content)
 
 
 # # 모든 고스트 콘텐츠 확인(인덱스) x번째 게시물
-# all_ghost_content = Ghost_Read_with_content_api.read_all_ghost_content()
+# all_ghost_content = read_all_ghost_content()
 # print(all_ghost_content[0])
 
 
 # # 모든 고스트 콘텐츠 확인(슬러그, 제목, 내용만 표시)
-# all_ghost_content_simple = Ghost_Read_with_content_api.read_all_ghost_content_simple()
+# all_ghost_content_simple = read_all_ghost_content_simple()
 # print(all_ghost_content_simple)
 
 
 # # 고스트 게시물 수 확인
-# all_ghost_content = Ghost_Read_with_content_api.read_all_ghost_content()
+# all_ghost_content = read_all_ghost_content()
 # print('고스트에 등록된 게시물 :',len(all_ghost_content) ,'개')

@@ -2,6 +2,9 @@ import App_config
 import requests
 import jwt
 from datetime import datetime as date
+import tempfile
+from urllib.parse import urlparse
+import os
 
 
 # 필요한 정보 불러오기
@@ -26,6 +29,54 @@ payload = {
 
 # 토큰 생성 (SECRET 디코딩 포함)
 token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
+
+
+# 이미지 업로드
+def upload_image(file=''):
+    endpoint = f'{API_URL}/ghost/api/admin/images/upload/'
+    headers = {'Authorization': 'Ghost {}'.format(token)}
+
+    # URL 파싱
+    parsed_url = urlparse(file)
+    print('parsed_url :', parsed_url)
+
+    # 파일명 추출
+    ref = os.path.basename(parsed_url.path)    
+
+    if parsed_url.scheme in ('http', 'https'):
+        # 외부 파일인 경우, 파일 다운로드
+        response = requests.get(file)
+        if response.status_code != 200:
+            print('파일 다운로드 실패. 상태 코드:', response.status_code)
+            return
+
+        # 임시 파일 생성
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(temp_file.name, 'wb') as f:
+            f.write(response.content)
+        temp_file.close()
+
+        # 파일 업로드
+        files = {
+            'file': (ref, open(temp_file.name, 'rb'), 'image/png'),
+            "ref": (None, ref)
+        }
+        response = requests.post(endpoint, headers=headers, files=files)
+    else:
+        # 로컬 파일인 경우, 그대로 업로드
+        files = {
+            'file': (ref, open(file, 'rb'), 'image/png'),
+            "ref": (None, ref)
+        }
+        response = requests.post(endpoint, headers=headers, files=files)
+
+    # 응답 결과 확인
+    if response.status_code == 201:
+        print('이미지 업로드 성공')
+        print('Response:', response.text)
+    else:
+        print('이미지 업로드 실패. 상태 코드:', response.status_code)
+        print('에러 메시지:', response.text)
 
 
 # 고스트에 글 작성

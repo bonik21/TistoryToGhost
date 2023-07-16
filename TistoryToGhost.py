@@ -1,5 +1,5 @@
 import App_config
-import Ghost_Read_with_content_api
+import Ghost_Read_with_content_api, Ghost_Write_in_HTML
 import Tistory_Read_info
 
 
@@ -30,3 +30,9 @@ print(f'티스토리 게시물 목록 " {slug_list}')
 # 티스토리 백업 폴더에 있는 파일 고스트 /content로 복사
 # for slug in slug_list:    
 #     Tistory_Read_info.copy_img_and_att(slug)
+
+
+upload_file = f'https://i.imgur.com/HnGo2.jpg'
+print(upload_file)
+
+Ghost_Write_in_HTML.upload_image(file=upload_file)

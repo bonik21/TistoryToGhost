@@ -26,14 +26,11 @@ payload = {
 # 토큰 생성 (SECRET 디코딩 포함)
 token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
 
-
-# Request 정보
-endpoint = f'{API_URL}/ghost/api/admin/posts/'
-headers = {'Authorization': 'Ghost {}'.format(token)}
-
-
 # 모든 게시물 출력 : 모든 정보 출력
 def read_all_ghost_content():
+    # Request 정보
+    endpoint = f'{API_URL}/ghost/api/admin/posts/'
+    headers = {'Authorization': 'Ghost {}'.format(token)}
     response = requests.get(endpoint, headers=headers)
     all_ghost_content = []
     
@@ -75,6 +72,9 @@ def read_all_ghost_content():
 
 # 사용가능한 key리스트 출력
 def read_key_list_ghost_content():
+    # Request 정보
+    endpoint = f'{API_URL}/ghost/api/admin/posts/'
+    headers = {'Authorization': 'Ghost {}'.format(token)}    
     response = requests.get(endpoint, headers=headers)
 
     key_list = []
