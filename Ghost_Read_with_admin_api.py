@@ -48,7 +48,7 @@ def read_all_ghost_content():
         print('에러 메시지:', response.text)
 
 
-# # 모든 게시물 출력 : 슬러그, 제목, 내용(html)만 출력
+# # (html key 사용불가)모든 게시물 출력 : 슬러그, 제목, 내용(html)만 출력
 # # admin_api로 조회할 때는 html키 값이 없음.
 # def read_all_ghost_content_simple():
 #     response = requests.get(endpoint, headers=headers)

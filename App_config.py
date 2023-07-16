@@ -11,6 +11,7 @@ os.chdir(app_path)
 config = configparser.ConfigParser()
 config.read(f'{app_path}/TistoryToGhost.ini', encoding='UTF8')
 settings = config['SETTINGS']
+AUTHOR = settings["AUTHOR"]
 API_URL = settings["API_URL"]
 CONTENT_API = settings["CONTENT_API"]
 ADMIN_API = settings["ADMIN_API"]
@@ -18,3 +19,5 @@ AUTO_COPY = settings["AUTO_COPY"]
 TISTROY_BACKUP_PATH = settings["TISTROY_BACKUP_PATH"]
 GHOST_IMG_PATH = settings["GHOST_IMG_PATH"]
 GHOST_ATT_PATH = settings["GHOST_ATT_PATH"]
+GHOST_IMG_URL = settings["GHOST_IMG_URL"]
+GHOST_ATT_URL = settings["GHOST_ATT_URL"]

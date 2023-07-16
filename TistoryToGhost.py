@@ -2,6 +2,7 @@ import App_config
 import Ghost_Read_with_content_api
 import Tistory_Read_info
 
+
 API_URL = App_config.API_URL
 TISTROY_BACKUP_PATH = Tistory_Read_info.TISTROY_BACKUP_PATH
 slug_list = Tistory_Read_info.get_slug_list(TISTROY_BACKUP_PATH)
@@ -25,3 +26,7 @@ print(f'티스토리 게시물 목록 " {slug_list}')
 #     data_list = Tistory_Read_info.get_file_list(slug)
 #     print(data_list)
 
+
+# 티스토리 백업 폴더에 있는 파일 고스트 /content로 복사
+# for slug in slug_list:    
+#     Tistory_Read_info.copy_img_and_att(slug)
