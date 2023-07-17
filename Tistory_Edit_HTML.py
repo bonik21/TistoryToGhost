@@ -2,14 +2,19 @@ import App_config
 import os
 from bs4 import BeautifulSoup
 import Ghost_Write_in_HTML
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
+from urllib.parse import urlparse
+import Tistory_Category_to_Slug
 
 
 # 필요한 정보 불러오기
 GHOST_IMG_URL = App_config.GHOST_IMG_URL
 GHOST_ATT_URL = App_config.GHOST_ATT_URL
+IMAGE_METHOD = App_config.IMAGE_METHOD
+TISTORY_BACKUP_PATH = App_config.TISTROY_BACKUP_PATH
 
 
+# 디렉토리에서 HTML파일 검색
 def list_html_files(directory):
     html_files = []
     for root, dirs, files in os.walk(directory):
@@ -42,7 +47,10 @@ def remove_script_tags(soup):
 
 
 # HTML 내용 가져오기(title, category, tags, content, feature_image)
-def extract_html_info(soup):   
+def extract_html_info(html_file):
+    with open(html_file, "r", encoding="utf-8") as file:
+        html_content = file.read()
+    soup = BeautifulSoup(html_content, "html.parser")       
     
     # 타이틀 <title></title> 내용 가져오기
     title_element = soup.find("title")
@@ -51,8 +59,11 @@ def extract_html_info(soup):
     
     # 카테고리 <p class="category"></p> 내용 가져오기
     category_element = soup.find("p", class_="category")
-    category = category_element.text if category_element else ""
-    category = category.strip()
+    category_raw = category_element.text if category_element else ""
+    category_raw = category_raw.strip()
+    category = Tistory_Category_to_Slug.convert_category_to_slug(category_raw)    
+    print("category_raw :", category_raw)
+    print("category :", category)
 
     # 태그 <div class="tags"></div> 내용 가져오기
     tags_element = soup.find("div", class_="tags")
@@ -63,28 +74,6 @@ def extract_html_info(soup):
     content_element = soup.find("div", class_="article-view")
     content = str(content_element) if content_element else ""
 
-    # # 대표 이미지(최초의 figure태그 인식)
-    # figure_tag = soup.find('figure', class_='imageblock alignCenter')
-    # if figure_tag:
-    #     img_tag = figure_tag.find('img')
-    #     if img_tag:
-    #         src = img_tag.get('src')
-    #         feature_image=src            
-    #     else:            
-    #         print("Image tag not found.")
-    #         feature_image=''
-    # else:
-    #     print("Figure tag not found.")
-    #     feature_image=''
-    
-    # return {
-    #     "title": title,
-    #     "category": category,        
-    #     "tags": tags,
-    #     "content": content,
-    #     "feature_image": feature_image
-    # }
-
     # 대표 이미지 (최초 img 태그 인식)
     img_tag = soup.find('img')
     if img_tag:
@@ -93,17 +82,24 @@ def extract_html_info(soup):
     else:            
         print("Image tag not found.")
         feature_image=''
+
+    # 발행시간 <p class="date"></p> 내용 가져오기
+    date_element = soup.find("p", class_="date")
+    date = date_element.text if date_element else ""
+    date = date.strip()    
+    published_at = convert_to_utc(date)
     
     return {
         "title": title,
         "category": category,        
         "tags": tags,
         "content": content,
-        "feature_image": feature_image
+        "feature_image": feature_image,
+        "published_at": published_at
     }
 
 
-# HTML파일 : 보기좋게 재정렬
+# HTML파일 : 편집(<p></p>, <script></script>, <style></style> 제거, 들여쓰기)
 def prettier_html(html_file):
     with open(html_file, "r", encoding="utf-8") as file:
         html_content = file.read()
@@ -115,14 +111,56 @@ def prettier_html(html_file):
         file.write(indented_html)
 
 
-# HTML파일 : img src 주소 변환
-def convert_img_src(html_file, slug):
+# HTML파일 : img src 주소 변환(복사방식)
+def convert_img_src_copy(html_file, slug):
     with open(html_file, 'r+', encoding='utf-8') as file:
         html_content = file.read()
         html_content = html_content.replace('./img/', f'{GHOST_IMG_URL}/{slug}/')
         file.seek(0)
         file.write(html_content)
         file.truncate()
+
+
+# HTML파일 : img src 주소 변환, 이미지 업로드 실행(업로드 방식)
+def convert_img_src_upload(html_file, slug):
+    with open(html_file, 'r+', encoding='utf-8') as file:
+        html_content = file.read()
+    soup = BeautifulSoup(html_content, "html.parser")
+    for img_tag in soup.find_all("img"):
+        if img_tag:
+            original_src = img_tag.get('src')
+
+            # 파일 이름 찾기
+            parsed_url = urlparse(original_src)
+            file_name = os.path.basename(parsed_url.path)            
+
+            # 이미 처리 되었을 때
+            if '/content/images/' in original_src: 
+                print('html 편집 이미 처리됨') 
+
+            # 내부 파일일 때
+            elif './img/' in original_src: 
+                print('로컬파일, ','파일명 :', file_name)
+                tistory_file_path = f'{TISTORY_BACKUP_PATH}\{slug}\img\{file_name}'
+                # 업로드 실행 후 새 url(new_src) 받기
+                new_src = Ghost_Write_in_HTML.upload_image(tistory_file_path)                
+                # HTML 수정
+                print(f'HTML 파일내의 "{original_src}"를 "{new_src}"로 교체 합니다.')
+                img_tag["src"] = new_src                 
+
+            # 외부 파일일 때
+            elif parsed_url.scheme in ('http', 'https'):                
+                print('외부파일, ','파일명 :', file_name)
+                # 업로드 실행 후 새 url(new_src) 받기
+                new_src = Ghost_Write_in_HTML.upload_image(original_src)                
+                # HTML 수정
+                print(f'HTML 파일내의 "{original_src}"를 "{new_src}"로 교체 합니다.')
+                img_tag["src"] = new_src                                  
+                    
+    indented_html = soup.prettify()
+    with open(html_file, "w", encoding="utf-8") as file:
+        file.write(indented_html)    
+    return       
 
 
 # HTML파일 : file href 주소 변환
@@ -139,39 +177,29 @@ def convert_file_src(html_file, slug):
 def convert_to_utc(input_time):
     # 입력한 시간을 datetime 객체로 변환
     input_datetime = datetime.strptime(input_time, '%Y-%m-%d %H:%M:%S')
-    
-    # 입력한 시간에 한국 표준시(UTC+9)를 적용하여 datetime 객체 생성
-    kst_timezone = timezone(datetime.timedelta(hours=9))
-    kst_datetime = input_datetime.replace(tzinfo=kst_timezone)
-    
+
+    # 입력한 시간에 UTC+9 시간을 더해줌
+    kst_datetime = input_datetime + timedelta(hours=9)
+
     # UTC로 변환
-    utc_datetime = kst_datetime.astimezone(timezone.utc)
-    
+    utc_datetime = kst_datetime - timedelta(hours=9)
+
     # 출력 형식에 맞게 변환
-    output_time = utc_datetime.strftime('%Y-%m-%dT%H:%M:%S.000Z')
-    
+    output_time = utc_datetime.strftime('%Y-%m-%dT%H:%M:%S.000+00:00')
+
     return output_time
 
 
-def tistory_to_ghost(directory):
-    html_files = list_html_files(directory)
-    for file_path in html_files:
-        slug = extract_numbers_from_file_path(file_path)
-        prettier_html(file_path)
-        convert_img_src(file_path, slug)
-        convert_file_src(file_path, slug)
-        with open(file_path, "r", encoding="utf-8") as file:
-            html_content = file.read()
-        soup = BeautifulSoup(html_content, "html.parser")        
-        title = extract_html_info(soup)["title"]
-        category = extract_html_info(soup)["category"]
-        tags = extract_html_info(soup)["tags"]
-        content = extract_html_info(soup)["content"]
-        feature_image = extract_html_info(soup)["feature_image"]        
-        Ghost_Write_in_HTML.write_to_ghost(title=title, slug=slug, tags=category, feature_image=feature_image, html=content, status='published')
-
-
-# 사용 예시
-directory_path = "E:\\Code\\Python\\Ghost\\tistory-temp"
-tistory_to_ghost(directory_path)
-
+# HTML파일 : iframe height 편집, ghost에서 height의 px이 %로 인식됨
+def convert_iframe_height(html_file, height):
+    height = str(height)
+    with open(html_file, 'r+', encoding='utf-8') as file:
+        html_content = file.read()
+    soup = BeautifulSoup(html_content, "html.parser")
+    for iframe_tag in soup.find_all("iframe"):
+        if iframe_tag:
+            original_height = iframe_tag.get('height')            
+            iframe_tag["height"] = height
+    indented_html = soup.prettify()            
+    with open(html_file, "w", encoding="utf-8") as file:
+        file.write(indented_html)             

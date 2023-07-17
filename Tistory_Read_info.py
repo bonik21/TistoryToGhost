@@ -7,7 +7,6 @@ import shutil
 TISTROY_BACKUP_PATH = App_config.TISTROY_BACKUP_PATH
 GHOST_IMG_PATH = App_config.GHOST_IMG_PATH
 GHOST_ATT_PATH = App_config.GHOST_ATT_PATH
-AUTO_COPY = App_config.AUTO_COPY
 
 
 # 티스토리 백업 폴더에서 slug 리스트 가져오기
@@ -93,7 +92,30 @@ def copy_img_and_att(slug):
     return
 
 
-slug_list = get_slug_list(TISTROY_BACKUP_PATH)
+# slug 번호로 첨부파일 파일 고스트로 복사
+def copy_att(slug):
+    slug = str(slug) # int로 들어오는 것을 방지                             
+
+    # 티스토리 백업에 첨부 파일이 있을 때            
+    att_path = Path(TISTROY_BACKUP_PATH) / slug / 'file'
+    if os.path.isdir(att_path):
+        # 고스트 content/files 내 slug 폴더 생성
+        target_att_path = GHOST_ATT_PATH+'\\'+slug
+        Path(target_att_path).mkdir(exist_ok=True)
+        
+        att_files_list = att_path.iterdir()
+        for item in att_files_list:
+            if item.is_file():
+                # print('파일명 :', item.name, '전체경로 :', item)                
+                source_att_file = item                
+                target_att_file = target_att_path+'\\'+item.name
+                if os.path.isfile(target_att_file):
+                    print(f"{target_att_file}이(가) 이미 있습니다.")                    
+                else:
+                    print(f"{target_att_file}을 복사합니다.")
+                    shutil.copyfile(source_att_file, target_att_file)
+    
+    return
 
 
 

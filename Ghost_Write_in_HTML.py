@@ -5,6 +5,7 @@ from datetime import datetime as date
 import tempfile
 from urllib.parse import urlparse
 import os
+import Ghost_Write_in_HTML
 
 
 # 필요한 정보 불러오기
@@ -31,21 +32,20 @@ payload = {
 token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
 
 
-# 이미지 업로드
-def upload_image(file=''):
+# 이미지 업로드(로컬파일이나 url을 입력하면 업로드 후 새 url 반환)
+def upload_image(img_file):    
     endpoint = f'{API_URL}/ghost/api/admin/images/upload/'
     headers = {'Authorization': 'Ghost {}'.format(token)}
 
     # URL 파싱
-    parsed_url = urlparse(file)
-    print('parsed_url :', parsed_url)
+    parsed_url = urlparse(img_file)    
 
     # 파일명 추출
     ref = os.path.basename(parsed_url.path)    
 
     if parsed_url.scheme in ('http', 'https'):
         # 외부 파일인 경우, 파일 다운로드
-        response = requests.get(file)
+        response = requests.get(img_file)
         if response.status_code != 200:
             print('파일 다운로드 실패. 상태 코드:', response.status_code)
             return
@@ -61,21 +61,25 @@ def upload_image(file=''):
             'file': (ref, open(temp_file.name, 'rb'), 'image/png'),
             "ref": (None, ref)
         }
-        response = requests.post(endpoint, headers=headers, files=files)
+        response = requests.post(endpoint, headers=headers, files=files)        
     else:
         # 로컬 파일인 경우, 그대로 업로드
         files = {
-            'file': (ref, open(file, 'rb'), 'image/png'),
+            'file': (ref, open(img_file, 'rb'), 'image/png'),
             "ref": (None, ref)
         }
         response = requests.post(endpoint, headers=headers, files=files)
 
     # 응답 결과 확인
-    if response.status_code == 201:
-        print('이미지 업로드 성공')
-        print('Response:', response.text)
+    if response.status_code == 201:        
+        print('업로드 성공 :', response.json())
+        new_url = response.json()['images'][0]['url']
+        
+        # 내부경로로 변경
+        replaced_url = new_url.replace(API_URL,'')        
+        return replaced_url
     else:
-        print('이미지 업로드 실패. 상태 코드:', response.status_code)
+        print('업로드 실패. 상태 코드:', response.status_code)
         print('에러 메시지:', response.text)
 
 
@@ -101,9 +105,10 @@ def write_to_ghost(title='', slug='', tags='', feature_image='', html='', status
 
     # 응답 결과 확인
     if response.status_code == 201:
-        print('글 작성 성공')    
+        print(f'{slug} 글 작성 성공')
+        # print('Response:', response.json())                
     else:
-        print('글 불러오기에 실패했습니다. 상태 코드:', response.status_code)
+        print(f'{slug} 글 작성 실패. 상태 코드:', response.status_code)
         print('에러 메시지:', response.text)
 
 
