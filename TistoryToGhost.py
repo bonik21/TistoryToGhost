@@ -15,7 +15,7 @@ def tistory_to_ghost(slug):
     print('file_list :', file_list)
     html_file_name = file_list["html_file"][0]
     html_file = f'{TISTROY_BACKUP_PATH}\{slug}\{html_file_name}'
-    # HTML 편집(<p></p>, <script></script>, <style></style> 제거, 들여쓰기)
+    # HTML 편집(<p></p>, <script></script>, <style></style> 제거)
     print(html_file)
     Tistory_Edit_HTML.prettier_html(html_file)
 
@@ -82,9 +82,9 @@ def tistory_to_ghost_all():
 #     Tistory_Read_info.copy_img_and_att(slug)
 
 
-# # 단일 포스팅
-# tistory_to_ghost('927')
+# 단일 포스팅
+# tistory_to_ghost('603')
 
 
-# 전체 포스팅
-tistory_to_ghost_all()
+# # 전체 포스팅
+# tistory_to_ghost_all()

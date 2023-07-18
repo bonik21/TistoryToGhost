@@ -99,14 +99,14 @@ def extract_html_info(html_file):
     }
 
 
-# HTML파일 : 편집(<p></p>, <script></script>, <style></style> 제거, 들여쓰기)
+# HTML파일 : 편집(<p></p>, <script></script>, <style></style> 제거)
 def prettier_html(html_file):
     with open(html_file, "r", encoding="utf-8") as file:
         html_content = file.read()
     soup = BeautifulSoup(html_content, "html.parser")
     remove_empty_paragraph_tags(soup)
     remove_script_tags(soup)        
-    indented_html = soup.prettify()
+    indented_html = str(soup)
     with open(html_file, "w", encoding="utf-8") as file:
         file.write(indented_html)
 
@@ -157,7 +157,7 @@ def convert_img_src_upload(html_file, slug):
                 print(f'HTML 파일내의 "{original_src}"를 "{new_src}"로 교체 합니다.')
                 img_tag["src"] = new_src                                  
                     
-    indented_html = soup.prettify()
+    indented_html = str(soup)
     with open(html_file, "w", encoding="utf-8") as file:
         file.write(indented_html)    
     return       
@@ -200,6 +200,6 @@ def convert_iframe_height(html_file, height):
         if iframe_tag:
             original_height = iframe_tag.get('height')            
             iframe_tag["height"] = height
-    indented_html = soup.prettify()            
+    indented_html = str(soup)            
     with open(html_file, "w", encoding="utf-8") as file:
         file.write(indented_html)             

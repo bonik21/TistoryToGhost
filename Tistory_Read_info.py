@@ -11,40 +11,47 @@ GHOST_ATT_PATH = App_config.GHOST_ATT_PATH
 
 # 티스토리 백업 폴더에서 slug 리스트 가져오기
 def get_slug_list(directory_path):
-    file_list = os.listdir(directory_path)    
-    return file_list
+    slug_list = os.listdir(directory_path)    
+    return slug_list
 
 
 # slug 번호로 티스토리 html, 이미지, 첨부파일 정보를 찾기
 def get_file_list(slug):
     slug = str(slug) # int로 들어오는 것을 방지
-    all_files_list = {"slug":slug, "html_file":[], "img_files":[], "att_files":[]}
-    
-    html_path = Path(TISTROY_BACKUP_PATH) / slug
-    if os.path.isdir(html_path):        
-        html_files_list = html_path.iterdir()
-        for item in html_files_list:
-            if item.is_file():
-                # print('파일명 :', item.name, '전체경로 :', item)
-                all_files_list["html_file"].append(item.name)                            
+    slug_path = f'{TISTROY_BACKUP_PATH}\{slug}'
+    if os.path.isdir(slug_path):
+        all_files_list = {"slug":slug, "html_file":[], "img_files":[], "att_files":[]}
+        
+        html_path = Path(TISTROY_BACKUP_PATH) / slug
+        if os.path.isdir(html_path):        
+            html_files_list = html_path.iterdir()
+            for item in html_files_list:
+                if item.is_file():
+                    # print('파일명 :', item.name, '전체경로 :', item)
+                    all_files_list["html_file"].append(item.name)                            
 
-    img_path = Path(TISTROY_BACKUP_PATH) / slug / 'img'
-    if os.path.isdir(img_path):        
-        img_files_list = img_path.iterdir()
-        for item in img_files_list:
-            if item.is_file():
-                # print('파일명 :', item.name, '전체경로 :', item)
-                all_files_list["img_files"].append(item.name)                
-            
-    att_path = Path(TISTROY_BACKUP_PATH) / slug / 'file'
-    if os.path.isdir(att_path):        
-        att_files_list = att_path.iterdir()
-        for item in att_files_list:
-            if item.is_file():
-                # print('파일명 :', item.name, '전체경로 :', item)
-                all_files_list["att_files"].append(item.name)                     
-    
+        img_path = Path(TISTROY_BACKUP_PATH) / slug / 'img'
+        if os.path.isdir(img_path):        
+            img_files_list = img_path.iterdir()
+            for item in img_files_list:
+                if item.is_file():
+                    # print('파일명 :', item.name, '전체경로 :', item)
+                    all_files_list["img_files"].append(item.name)                
+                
+        att_path = Path(TISTROY_BACKUP_PATH) / slug / 'file'
+        if os.path.isdir(att_path):        
+            att_files_list = att_path.iterdir()
+            for item in att_files_list:
+                if item.is_file():
+                    # print('파일명 :', item.name, '전체경로 :', item)
+                    all_files_list["att_files"].append(item.name)
+        
+    else:
+        all_files_list = f'{TISTROY_BACKUP_PATH}\{slug} 폴더 없음'
+
     return all_files_list
+    
+    
 
 
 # slug 번호로 티스토리 이미지, 첨부파일 파일 고스트로 복사
@@ -56,7 +63,7 @@ def copy_img_and_att(slug):
     if os.path.isdir(img_path):
         # 고스트 content/img 내 slug 폴더 생성
         target_img_path = GHOST_IMG_PATH+'\\'+slug
-        Path(target_img_path).mkdir(exist_ok=True)        
+        Path(target_img_path).mkdir(parents=True, exist_ok=True)        
         
         img_files_list = img_path.iterdir()
         for item in img_files_list:
@@ -75,7 +82,7 @@ def copy_img_and_att(slug):
     if os.path.isdir(att_path):
         # 고스트 content/files 내 slug 폴더 생성
         target_att_path = GHOST_ATT_PATH+'\\'+slug
-        Path(target_att_path).mkdir(exist_ok=True)
+        Path(target_att_path).mkdir(parents=True, exist_ok=True)
         
         att_files_list = att_path.iterdir()
         for item in att_files_list:
@@ -101,7 +108,7 @@ def copy_att(slug):
     if os.path.isdir(att_path):
         # 고스트 content/files 내 slug 폴더 생성
         target_att_path = GHOST_ATT_PATH+'\\'+slug
-        Path(target_att_path).mkdir(exist_ok=True)
+        Path(target_att_path).mkdir(parents=True, exist_ok=True)
         
         att_files_list = att_path.iterdir()
         for item in att_files_list:

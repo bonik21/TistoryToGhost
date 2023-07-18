@@ -5,7 +5,6 @@ from datetime import datetime as date
 import tempfile
 from urllib.parse import urlparse
 import os
-import Ghost_Write_in_HTML
 
 
 # 필요한 정보 불러오기
