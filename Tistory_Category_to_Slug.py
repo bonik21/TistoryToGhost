@@ -1,3 +1,4 @@
+# "원래 티스토리 카테고리": "원하는 고스트 tag" 띄워쓰기 정확해야 함
 def convert_category_to_slug(category):
     mod_keywords = {"BoniK's WORKS/발매앨범": "BoniK's WORKS",
                     "BoniK's WORKS/작곡,편곡,MIDI 편곡": "BoniK's WORKS",
@@ -18,7 +19,7 @@ def convert_category_to_slug(category):
                     "실용음악 이야기/음악 장비": "음악 장비/작업실",
                     "실용음악 이야기/음악작업실, 룸튜닝": "음악 장비/작업실",
                     "실용음악 이야기/음악관련잡담": "음악 이야기",
-                    "실용음악 이야기/Billboard Chart": "삭제할 게시물", # 올리지 않기
+                    "실용음악 이야기/Billboard Chart": "Billboard Chart",
                     "IT,게임,문학 이야기/컴퓨터, OS, 소프트웨어": "컴퓨터, 소프트웨어",
                     "IT,게임,문학 이야기/WEB, 인터넷": "Web, 인터넷",
                     "IT,게임,문학 이야기/통신, 스마트폰": "모바일",
@@ -27,7 +28,7 @@ def convert_category_to_slug(category):
                     "다른 이야기/추천장비": "사용기",
                     "다른 이야기/추천서적": "독서/출판", # 재활용
                     "다른 이야기/유용한 정보": "삶의 지혜",
-                    "다른 이야기/잡담": "아무말",
+                    "다른 이야기/잡담": "잡담",
                     }
     for x, y in mod_keywords.items():
         category = category.replace(x, y)

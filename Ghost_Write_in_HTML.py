@@ -44,23 +44,28 @@ def upload_image(img_file):
 
     if parsed_url.scheme in ('http', 'https'):
         # 외부 파일인 경우, 파일 다운로드
-        response = requests.get(img_file)
-        if response.status_code != 200:
-            print('파일 다운로드 실패. 상태 코드:', response.status_code)
+        try:
+            response = requests.get(img_file)
+            # 임시 파일 생성
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            with open(temp_file.name, 'wb') as f:
+                f.write(response.content)
+            temp_file.close()
+
+            # 파일 업로드
+            files = {
+                'file': (ref, open(temp_file.name, 'rb'), 'image/png'),
+                "ref": (None, ref)
+            }
+            response = requests.post(endpoint, headers=headers, files=files)             
+            if response.status_code != 200:
+                print('파일 다운로드 실패. 상태 코드:', response.status_code)
             return
-
-        # 임시 파일 생성
-        temp_file = tempfile.NamedTemporaryFile(delete=False)
-        with open(temp_file.name, 'wb') as f:
-            f.write(response.content)
-        temp_file.close()
-
-        # 파일 업로드
-        files = {
-            'file': (ref, open(temp_file.name, 'rb'), 'image/png'),
-            "ref": (None, ref)
-        }
-        response = requests.post(endpoint, headers=headers, files=files)        
+        except requests.exceptions.RequestException as e:
+        # 요청 중에 오류가 발생한 경우의 코드
+            print(f"요청 오류 발생: {e}")
+            return
+       
     else:
         # 로컬 파일인 경우, 그대로 업로드
         files = {
