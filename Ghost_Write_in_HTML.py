@@ -3,8 +3,9 @@ import requests
 import jwt
 from datetime import datetime as date
 import tempfile
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 import os
+import Tistory_Read_info
 
 
 # 필요한 정보 불러오기
@@ -31,30 +32,42 @@ payload = {
 token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
 
 
+# 이미지에서 ?original 쿼리 제거 (param입력시 ?없이)
+def remove_specific_query_param(url, param):
+    parsed_url = urlparse(url)
+    query_params = parsed_url.query
+    if query_params.startswith(param):
+        query_params = query_params[len(param):].lstrip('&')
+    parsed_url = parsed_url._replace(query=query_params)
+    return urlunparse(parsed_url)
+
+
 # 이미지 업로드(로컬파일이나 url을 입력하면 업로드 후 새 url 반환)
 def upload_image(img_file):    
     endpoint = f'{API_URL}/ghost/api/admin/images/upload/'
     headers = {'Authorization': 'Ghost {}'.format(token)}
 
     # URL 파싱
-    parsed_url = urlparse(img_file)    
-
-    # 파일명 추출(확장자가 없을 땐 .png 추가)
-    ref = os.path.basename(parsed_url.path)
-    if not os.path.splitext(ref)[1]:
-        ref += '.png'    
+    parsed_url = urlparse(img_file)
 
     if parsed_url.scheme in ('http', 'https'):
         # 외부 파일인 경우, 파일 다운로드
+
+        # ?original 쿼리 제거
+        img_file = remove_specific_query_param(img_file, "original")
+        
+        # 파일명 추출(확장자가 없을 땐 .png 추가)
+        ref = os.path.basename(parsed_url.path)        
+        if not os.path.splitext(ref)[1]:        
+            ref += '.png'
         try:
             response = requests.get(img_file)           
             if response.status_code == 200:
                 # 임시 파일 생성
                 temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
-                print(temp_file)
+                # temp_file = tempfile.NamedTemporaryFile(delete=False)
                 with open(temp_file.name, 'wb') as f:
-                    f.write(response.content)
-                print(temp_file.name)    
+                    f.write(response.content)                
                 temp_file.close()
 
                 # 파일 업로드
@@ -78,7 +91,17 @@ def upload_image(img_file):
             print(f"요청 오류 발생: {e}")
                
     else:
-        # 로컬 파일인 경우, 그대로 업로드
+        # 로컬 파일인 경우
+
+        # 유효한 확장자를 가졌는지 확인 없으면 .jpg추가
+        if not Tistory_Read_info.is_valid_image_extension(img_file):
+            img_file = Tistory_Read_info.add_image_extension(img_file)
+            print(f"{img_file}으로 변환됨")        
+
+        # 파일명 재추출
+        parsed_url = urlparse(str(img_file))
+        ref = os.path.basename(parsed_url.path)
+
         files = {
             'file': (ref, open(img_file, 'rb'), 'image/png'),
             "ref": (None, ref)
@@ -126,32 +149,3 @@ def write_to_ghost(title='', slug='', tags='', feature_image='', html='', status
     else:
         print(f'{slug} 글 작성 실패. 상태 코드:', response.status_code)
         print('에러 메시지:', response.text)
-
-
-# # Make an authenticated request to create a post
-# endpoint = f'{API_URL}/ghost/api/admin/posts/?source=html'
-# headers = {'Authorization': 'Ghost {}'.format(token)}
-# body = {
-#     "posts": [
-#         {
-#             "title": "My test post2",
-#             "slug": "test123",
-#             "tags": ["Getting Started", "Tag Example"],
-#             "authors": [f"{AUTHOR}"],
-#             "feature_image": "https://static.ghost.org/v3.0.0/images/welcome-to-ghost.png",
-#             "html": "<p>본문입니다. 본문. My post content. Work in progress...</p>",
-#             "status": "published"
-#         }
-#     ]
-# }
-# response = requests.post(endpoint, json=body, headers=headers)
-
-# # 응답 결과 확인
-# if response.status_code == 201:
-#     print('글 작성 성공')    
-# else:
-#     print('글 불러오기에 실패했습니다. 상태 코드:', response.status_code)
-#     print('에러 메시지:', response.text)
-
-
-# write_to_ghost(title='제목',slug='test4534',tags='News, 음악', feature_image=r'E:\\Code\\Python\\Ghost\\tistory-temp\\471\\img\\d0005363_4f3b353aecb9e.jpg', html='<p>본문</p>')

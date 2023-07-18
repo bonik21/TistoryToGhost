@@ -36,7 +36,9 @@ def get_file_list(slug):
             for item in img_files_list:
                 if item.is_file():
                     # print('파일명 :', item.name, '전체경로 :', item)
-                    all_files_list["img_files"].append(item.name)                
+                    all_files_list["img_files"].append(item.name)
+                    if not is_valid_image_extension(item):
+                        print(f"{item} 유효한 이미지 파일의 확장자가 아닙니다. 자동으로 처리되지만 오류나 나는지 확인이 필요합니다.")                    
                 
         att_path = Path(TISTROY_BACKUP_PATH) / slug / 'file'
         if os.path.isdir(att_path):        
@@ -51,7 +53,20 @@ def get_file_list(slug):
 
     return all_files_list
     
-    
+
+# 유효한 이미지인지 확인    
+def is_valid_image_extension(file_path):
+    valid_extensions = ['.jpg', '.jpeg', '.png']
+    file_name, file_extension = os.path.splitext(os.path.basename(file_path))
+    return file_extension.lower() in valid_extensions    
+
+
+# 이미지파일에 .jpg 확장자 추가(실제파일 rename)
+def add_image_extension(file_path):
+    path = Path(file_path)
+    new_file_path = path.with_suffix(".jpg")
+    path.rename(new_file_path)
+    return new_file_path  
 
 
 # slug 번호로 티스토리 이미지, 첨부파일 파일 고스트로 복사
