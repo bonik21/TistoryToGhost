@@ -62,8 +62,7 @@ def extract_html_info(html_file):
     category_raw = category_element.text if category_element else ""
     category_raw = category_raw.strip()
     category = Tistory_Category_to_Slug.convert_category_to_slug(category_raw)    
-    print("category_raw :", category_raw)
-    print("category :", category)
+    print(f"티스토리 카테고리 [{category_raw}]을(를) 고스트 tag [{category}](으)로 변경합니다.")    
 
     # 태그 <div class="tags"></div> 내용 가져오기
     tags_element = soup.find("div", class_="tags")
@@ -139,8 +138,7 @@ def convert_img_src_upload(html_file, slug):
                 print('html 편집 이미 처리됨') 
 
             # 내부 파일일 때
-            elif './img/' in original_src: 
-                print('로컬파일, ','파일명 :', file_name)
+            elif './img/' in original_src:                 
                 tistory_file_path = f'{TISTORY_BACKUP_PATH}\{slug}\img\{file_name}'
                 # 업로드 실행 후 새 url(new_src) 받기
                 new_src = Ghost_Write_in_HTML.upload_image(tistory_file_path)                
@@ -149,8 +147,7 @@ def convert_img_src_upload(html_file, slug):
                 img_tag["src"] = new_src                 
 
             # 외부 파일일 때
-            elif parsed_url.scheme in ('http', 'https'):                
-                print('외부파일, ','파일명 :', file_name)
+            elif parsed_url.scheme in ('http', 'https'):                                
                 # 업로드 실행 후 새 url(new_src) 받기
                 new_src = Ghost_Write_in_HTML.upload_image(original_src)                
                 # HTML 수정

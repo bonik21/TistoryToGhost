@@ -39,18 +39,22 @@ def upload_image(img_file):
     # URL 파싱
     parsed_url = urlparse(img_file)    
 
-    # 파일명 추출
-    ref = os.path.basename(parsed_url.path)    
+    # 파일명 추출(확장자가 없을 땐 .png 추가)
+    ref = os.path.basename(parsed_url.path)
+    if not os.path.splitext(ref)[1]:
+        ref += '.png'    
 
     if parsed_url.scheme in ('http', 'https'):
         # 외부 파일인 경우, 파일 다운로드
         try:
-            response = requests.get(img_file)
+            response = requests.get(img_file)           
             if response.status_code == 200:
                 # 임시 파일 생성
-                temp_file = tempfile.NamedTemporaryFile(delete=False)
+                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+                print(temp_file)
                 with open(temp_file.name, 'wb') as f:
                     f.write(response.content)
+                print(temp_file.name)    
                 temp_file.close()
 
                 # 파일 업로드
@@ -117,6 +121,7 @@ def write_to_ghost(title='', slug='', tags='', feature_image='', html='', status
     # 응답 결과 확인
     if response.status_code == 201:
         print(f'{slug} 글 작성 성공')
+        print('-'*100)
         # print('Response:', response.json())                
     else:
         print(f'{slug} 글 작성 실패. 상태 코드:', response.status_code)
