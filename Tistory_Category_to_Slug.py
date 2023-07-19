@@ -1,4 +1,4 @@
-# "원래 티스토리 카테고리": "원하는 고스트 tag" 띄워쓰기 정확해야 함
+# "원래 티스토리 카테고리": "원하는 고스트 tag" 띄워쓰기 정확해야 함(커스텀)
 def convert_category_to_slug(category):
     mod_keywords = {"BoniK's WORKS/발매앨범": "BoniK's WORKS",
                     "BoniK's WORKS/작곡,편곡,미디편곡": "BoniK's WORKS",

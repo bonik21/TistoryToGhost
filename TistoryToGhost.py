@@ -15,8 +15,9 @@ def tistory_to_ghost(slug):
     print('file_list :', file_list)
     html_file_name = file_list["html_file"][0]
     html_file = f'{TISTROY_BACKUP_PATH}\{slug}\{html_file_name}'
-    # HTML 편집(<p></p>, <script></script>, <style></style> 제거)
+    # HTML 편집(url변환, <p></p>, <script></script>, <style></style> 제거)
     print(html_file)
+    Tistory_Edit_HTML.convert_url(html_file)
     Tistory_Edit_HTML.prettier_html(html_file)
 
     # iframe height 60%로 수정

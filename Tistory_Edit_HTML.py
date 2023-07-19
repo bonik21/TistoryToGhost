@@ -120,6 +120,16 @@ def convert_img_src_copy(html_file, slug):
         file.truncate()
 
 
+# HTML파일 : a href 원하는 주소 변환(커스텀)
+def convert_url(html_file):
+    with open(html_file, 'r', encoding='utf-8') as file:
+        html_content = file.read()    
+    html_content = html_content.replace('http://fevernigga.tistory.com', 'https://bonik.me')
+    html_content = html_content.replace('https://fevernigga.tistory.com', 'https://bonik.me')
+    with open(html_file, 'w', encoding='utf-8') as file:
+        file.write(html_content)
+
+
 # HTML파일 : img src 주소 변환, 이미지 업로드 실행(업로드 방식)
 def convert_img_src_upload(html_file, slug):
     with open(html_file, 'r+', encoding='utf-8') as file:

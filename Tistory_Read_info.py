@@ -38,7 +38,9 @@ def get_file_list(slug):
                     # print('파일명 :', item.name, '전체경로 :', item)
                     all_files_list["img_files"].append(item.name)
                     if not is_valid_image_extension(item):
-                        print(f"{item} 유효한 이미지 파일의 확장자가 아닙니다. 자동으로 처리되지만 오류나 나는지 확인이 필요합니다.")                    
+                        print(f"{item} 유효한 이미지 파일의 확장자가 아닙니다. 자동으로 처리되지만 오류나 나는지 확인이 필요합니다.")
+                    if '?' in item.name or '&' in item.name or '=' in item.name or '#' in item.name:
+                        print(f"{item}에 유효하지 않은 문자가 있습니다. (?, &, =, #)")
                 
         att_path = Path(TISTROY_BACKUP_PATH) / slug / 'file'
         if os.path.isdir(att_path):        
