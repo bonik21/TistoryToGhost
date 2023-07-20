@@ -5,6 +5,7 @@ import Ghost_Write_in_HTML
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 import Tistory_Category_to_Slug
+import re
 
 
 # 필요한 정보 불러오기
@@ -31,19 +32,36 @@ def extract_numbers_from_file_path(file_path):
     return number
 
 
-# HTML : <p></p> 제거
+# HTML : <p></p> 제거 [Pass by Object Reference(Call by Sharing)]
 def remove_empty_paragraph_tags(soup):
     for paragraph in soup.find_all("p"):
         if not paragraph.contents:
             paragraph.extract()
 
 
-# HTML : script, style제거(본문 첨부 애드센스 등)
+# HTML : script, style제거(본문 첨부 애드센스 등) [Pass by Object Reference(Call by Sharing)]
 def remove_script_tags(soup):
     for script in soup.find_all("script"):
         script.extract()
     for style in soup.find_all("style"):
-        style.extract()    
+        style.extract()
+
+
+# HTML : 태그 <div class="tags"></div>의 공백 제거 (Call by Sharing 아님)
+def remove_tags_space(soup):
+    tags_element = soup.find("div", class_="tags")
+    if tags_element:
+        tags = tags_element.text.strip()
+        tags_element.string = tags  # 해당 태그의 내용을 수정
+    return soup  # 수정된 soup 객체를 반환   
+
+
+# HTML : 태그 <div class="tags"></div> 제거 (Call by Sharing 아님)
+def remove_tags(soup):
+    tags_element = soup.find("div", class_="tags")
+    if tags_element:
+        tags_element.extract()
+    return soup    
 
 
 # HTML 내용 가져오기(title, category, tags, content, feature_image)
@@ -104,8 +122,9 @@ def prettier_html(html_file):
         html_content = file.read()
     soup = BeautifulSoup(html_content, "html.parser")
     remove_empty_paragraph_tags(soup)
-    remove_script_tags(soup)        
-    indented_html = str(soup)
+    remove_script_tags(soup)
+    soup = remove_tags_space(soup)    
+    indented_html = str(soup)    
     with open(html_file, "w", encoding="utf-8") as file:
         file.write(indented_html)
 
@@ -210,3 +229,30 @@ def convert_iframe_height(html_file, height):
     indented_html = str(soup)            
     with open(html_file, "w", encoding="utf-8") as file:
         file.write(indented_html)             
+
+
+# HTML파일 : Youtube object to iframe
+def convert_youtube_embed(old_embed_code):
+    # 유튜브 비디오 ID를 추출합니다.
+    video_id_match = re.search(r'youtube\.com/v/([a-zA-Z0-9_-]+)', old_embed_code)
+    if not video_id_match:
+        # 유튜브 비디오 ID를 찾지 못한 경우 원래의 embed 코드를 그대로 반환합니다.
+        return old_embed_code
+
+    video_id = video_id_match.group(1)
+    new_embed_code = f'<iframe width="100%" height="60%" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
+    return new_embed_code 
+
+
+# temp_html = f"{TISTORY_BACKUP_PATH}\906\906-음악인-권리찾기-[페어뮤직-코리아]-공연-안내.html"
+# prettier_html(temp_html)
+
+
+# # 유튜브 변환 테스트
+# # 예전 유튜브 embed 코드
+# old_embed_code = '<object style="height: 344px; width: 425px"><param name="movie" value="http://www.youtube.com/v/OEuZSgpxQtY?version=3"><param name="allowFullScreen" value="true"><param name="allowScriptAccess" value="always"><embed src="http://www.youtube.com/v/OEuZSgpxQtY?version=3" type="application/x-shockwave-flash" allowfullscreen="true" allowScriptAccess="always" width="515" height="417"></object>'
+
+# # 변환된 최신 embed 코드
+# new_embed_code = convert_youtube_embed(old_embed_code)
+# print(new_embed_code)
+

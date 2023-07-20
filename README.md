@@ -56,19 +56,22 @@ pip install requests, beautifulsoup4, pyjwt
 
 ```
 # 123번 게시물의 파일 확인
-python TistoryToGhost_Cli.py 123 --check
+python TistoryToGhost_Cli.py --check 123
 
 # 123번 게시물 고스트로 포스팅
 python TistoryToGhost_Cli.py 123
-    # 혹은
-python TistoryToGhost_Cli.py 123 --post
+python TistoryToGhost_Cli.py --post 123
 
 # TISTORY_BACKUP_PATH의 모든 게시물 확인
-python TistoryToGhost_Cli.py all --check
+python TistoryToGhost_Cli.py --check all
 
 # TISTORY_BACKUP_PATH의 모든 게시물 포스팅
 python TistoryToGhost_Cli.py all
-    # 혹은
-python TistoryToGhost_Cli.py all --post
+python TistoryToGhost_Cli.py --post all
 
+# TISTORY_BACKUP_PATH의 모든 .html파일에서 키워드 검색
+python TistoryToGhost_Cli.py --search "검색어"
+
+# TISTORY_BACKUP_PATH의 모든 파일 유효성 검사 및 .html 오류 검색
+python TistoryToGhost_Cli.py --search all
 ```

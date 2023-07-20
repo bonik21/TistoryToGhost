@@ -26,11 +26,12 @@ payload = {
 # 토큰 생성 (SECRET 디코딩 포함)
 token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
 
-# 모든 게시물 출력 : 모든 정보 출력
-def read_all_ghost_content():
+
+# 특정 게시물 출력 : 모든 정보 출력
+def read_slug_ghost_content(slug):
     # Request 정보
-    endpoint = f'{API_URL}/ghost/api/admin/posts/'
-    headers = {'Authorization': 'Ghost {}'.format(token)}
+    endpoint = f'{API_URL}/ghost/api/admin/posts/slug/{slug}'
+    headers = {'Authorization': f'Ghost {token}'}
     response = requests.get(endpoint, headers=headers)
     all_ghost_content = []
     
@@ -43,6 +44,62 @@ def read_all_ghost_content():
     else:
         print('글 불러오기에 실패했습니다. 상태 코드:', response.status_code)
         print('에러 메시지:', response.text)
+
+
+# 특정 게시물 업로드 확인 (업로드 되어 있으면 True)
+def is_slug_in_Ghost(slug):
+    # Request 정보
+    endpoint = f'{API_URL}/ghost/api/admin/posts/slug/{slug}'
+    headers = {'Authorization': f'Ghost {token}'}
+    response = requests.get(endpoint, headers=headers)
+    all_ghost_content = []
+    
+    # 응답 결과 확인
+    if response.status_code == 200:            
+        return True
+
+    else:
+        print('글 불러오기에 실패했습니다. 상태 코드:', response.status_code)
+        # print('에러 메시지:', response.text)
+        return False        
+
+
+# 고스트의 모든 게시물 출력 : 모든 정보 출력
+def read_all_ghost_content():
+    # Request 정보
+    endpoint = f'{API_URL}/ghost/api/admin/posts/?limit=all'
+    headers = {'Authorization': f'Ghost {token}'}
+    response = requests.get(endpoint, headers=headers)
+    all_ghost_content = []
+    
+    # 응답 결과 확인
+    if response.status_code == 200:    
+        posts_data = response.json()
+        all_ghost_content = posts_data['posts']
+        return all_ghost_content
+
+    else:
+        print('글 불러오기에 실패했습니다. 상태 코드:', response.status_code)
+        print('에러 메시지:', response.text)
+
+
+# 고스트의 게시물 수 출력
+def number_of_ghost_content():
+    # Request 정보
+    endpoint = f'{API_URL}/ghost/api/admin/posts/?limit=all'
+    headers = {'Authorization': f'Ghost {token}'}
+    response = requests.get(endpoint, headers=headers)
+    all_ghost_content = []
+    
+    # 응답 결과 확인
+    if response.status_code == 200:    
+        posts_data = response.json()
+        all_ghost_content = posts_data['posts']
+        return len(all_ghost_content)
+
+    else:
+        print('글 불러오기에 실패했습니다. 상태 코드:', response.status_code)
+        print('에러 메시지:', response.text)        
 
 
 # # (html key 사용불가)모든 게시물 출력 : 슬러그, 제목, 내용(html)만 출력
@@ -74,7 +131,7 @@ def read_all_ghost_content():
 def read_key_list_ghost_content():
     # Request 정보
     endpoint = f'{API_URL}/ghost/api/admin/posts/'
-    headers = {'Authorization': 'Ghost {}'.format(token)}    
+    headers = {'Authorization': f'Ghost {token}'}   
     response = requests.get(endpoint, headers=headers)
 
     key_list = []
@@ -112,3 +169,15 @@ def read_key_list_ghost_content():
 # # 고스트 게시물 수 확인
 # all_ghost_content = read_all_ghost_content()
 # print('고스트에 등록된 게시물 :',len(all_ghost_content) ,'개')
+
+
+# # 특정 고스트 콘텐츠 확인(slug)
+# slug_ghost_content = read_slug_ghost_content('123')
+# print(slug_ghost_content)
+
+
+# # 콘텐츠가 고스트에 올라갔는지 확인(slug)
+# slug_ghost_content = is_slug_in_Ghost('123')
+# print(slug_ghost_content)
+
+

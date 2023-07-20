@@ -9,6 +9,19 @@ IMAGE_METHOD = App_config.IMAGE_METHOD
 slug_list = Tistory_Read_info.get_slug_list(TISTROY_BACKUP_PATH)
 
 
+class Colors:
+    BLACK = '\033[30m'
+    RED = '\033[31m'
+    GREEN = '\033[32m'
+    YELLOW = '\033[33m'
+    BLUE = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN = '\033[36m'
+    WHITE = '\033[37m'
+    UNDERLINE = '\033[4m'
+    RESET = '\033[0m'
+
+
 # 작성중 : 티스토리에서 고스트로 옮기기 (단일 slug)
 def tistory_to_ghost(slug):
     file_list = Tistory_Read_info.get_file_list(slug)
@@ -37,10 +50,14 @@ def tistory_to_ghost(slug):
         # 첨부파일 a href 편집
         Tistory_Edit_HTML.convert_file_src(html_file, slug)
     else:
-        print("이미지 및 첨부파일 처리 실패")
+        print(Colors.RED,"오류 : 이미지 및 첨부파일 처리 실패", Colors.RESET)
 
-    upload_data = Tistory_Edit_HTML.extract_html_info(html_file)    
-
+    # 등록되어 있는지 확인
+    if Ghost_Read_with_content_api.is_slug_in_Ghost(slug):
+        print(Colors.GREEN, f"[{slug}]은(는) 이미 고스트에 포스팅되어 있습니다.", Colors.RESET)
+        return
+    upload_data = Tistory_Edit_HTML.extract_html_info(html_file)
+    
     Ghost_Write_in_HTML.write_to_ghost(
         title=upload_data["title"],
         slug=slug,

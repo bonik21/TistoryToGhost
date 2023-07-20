@@ -7,7 +7,7 @@ import shutil
 TISTROY_BACKUP_PATH = App_config.TISTROY_BACKUP_PATH
 GHOST_IMG_PATH = App_config.GHOST_IMG_PATH
 GHOST_ATT_PATH = App_config.GHOST_ATT_PATH
-
+SEARCH_IN_HTML = App_config.SEARCH_IN_HTML
 
 class Colors:
     BLACK = '\033[30m'
@@ -31,10 +31,7 @@ def get_slug_list(directory_path):
 # slug 번호로 티스토리 html, 이미지, 첨부파일 정보를 찾기
 def get_file_list(slug):
     slug = str(slug) # int로 들어오는 것을 방지
-    slug_path = f'{TISTROY_BACKUP_PATH}\{slug}'
-    print()
-    print()
-    print(Colors.BLUE, "-"*40,  f"게시물 [{slug}] 정보", "-"*40, Colors.RESET)    
+    slug_path = f'{TISTROY_BACKUP_PATH}\{slug}'    
     if os.path.isdir(slug_path):
         all_files_list = {"slug":slug, "html_file":[], "img_files":[], "att_files":[]}
         
@@ -44,7 +41,10 @@ def get_file_list(slug):
             for item in html_files_list:
                 if item.is_file():
                     # print('파일명 :', item.name, '전체경로 :', item)
-                    all_files_list["html_file"].append(item.name)                            
+                    all_files_list["html_file"].append(item.name)
+
+                    # HTML파일에 keyword(.ini내에 정의)가 있는지 검색
+                    is_valid_html(item, SEARCH_IN_HTML)
 
         img_path = Path(TISTROY_BACKUP_PATH) / slug / 'img'
         if os.path.isdir(img_path):        
@@ -55,8 +55,8 @@ def get_file_list(slug):
                     all_files_list["img_files"].append(item.name)
                     if not is_valid_image_extension(item):
                         print(Colors.YELLOW, f"주의 : {item} 유효한 이미지 파일의 확장자가 아닙니다. 자동으로 처리되지만 오류가 나는지 확인이 필요합니다.", Colors.RESET)
-                    if '?' in item.name or '&' in item.name or '=' in item.name or '#' in item.name:
-                        print(Colors.RED, f"오류 : {item}에 유효하지 않은 문자가 있습니다. (?, &, =, #) 자동으로 처리되지 않습니다.", Colors.RESET)
+                    if '?' in item.name or '=' in item.name or '#' in item.name or '&' in item.name or ';' in item.name:
+                        print(Colors.RED, f"오류 : {item}에 유효하지 않은 문자가 있습니다. (?, =, #, &, ;) 자동으로 처리되지 않습니다.", Colors.RESET)
                 
         att_path = Path(TISTROY_BACKUP_PATH) / slug / 'file'
         if os.path.isdir(att_path):        
@@ -78,9 +78,32 @@ def get_file_list(slug):
 
 # 유효한 이미지인지 확인    
 def is_valid_image_extension(file_path):
-    valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+    valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
     file_name, file_extension = os.path.splitext(os.path.basename(file_path))
+    if file_extension.lower() == '.bmp':
+        print(Colors.RED, "오류 : .bmp 파일은 고스트에 업로드할 수 없습니다. 자동으로 처리되지 않습니다.", Colors.RESET)
     return file_extension.lower() in valid_extensions    
+
+
+# HTML 파일 내부 검색(ini에 사전 정의된 키워드)
+def is_valid_html(html_file, keyword):    
+    keyword_list = SEARCH_IN_HTML.split(", ")    
+    with open(html_file, 'r+', encoding='utf-8') as file:
+        html_content = file.read()
+        for keyword in keyword_list:
+            if keyword in html_content:
+                print(Colors.MAGENTA, f"검색 : {html_file}파일에 {keyword}이(가) 포함되어 있습니다.", Colors.RESET)
+    return
+
+
+# HTML 파일 내부 검색(cli search 용)
+def is_in_html(html_file, keyword):
+    with open(html_file, 'r+', encoding='utf-8') as file:        
+        html_content = file.read()
+    if keyword in html_content:
+        return True
+    else:
+        False
 
 
 # 이미지파일에 .jpg 확장자 추가(실제파일 rename)
