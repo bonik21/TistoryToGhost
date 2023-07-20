@@ -8,6 +8,19 @@ import os
 import Tistory_Read_info
 
 
+class Colors:
+    BLACK = '\033[30m'
+    RED = '\033[31m'
+    GREEN = '\033[32m'
+    YELLOW = '\033[33m'
+    BLUE = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN = '\033[36m'
+    WHITE = '\033[37m'
+    UNDERLINE = '\033[4m'
+    RESET = '\033[0m'
+
+
 # 필요한 정보 불러오기
 ADMIN_API = App_config.ADMIN_API
 API_URL = App_config.API_URL
@@ -82,13 +95,13 @@ def upload_image(img_file):
                     replaced_url = new_url.replace(API_URL,'')
                     return replaced_url
                 else:
-                    print('업로드 실패. 상태 코드:', response.status_code)
-                    print('에러 메시지:', response.text)    
+                    print(Colors.RED, '업로드 실패. 상태 코드:', response.status_code, Colors.RESET)
+                    print(Colors.RED, '에러 메시지:', response.text, Colors.RESET)    
             else:
-                print('파일 다운로드 실패. 상태 코드:', response.status_code)
+                print(Colors.RED, '파일 다운로드 실패. 상태 코드:', response.status_code, Colors.BLUE)
                                
         except requests.exceptions.RequestException as e:
-            print(f"요청 오류 발생: {e}")
+            print(Colors.RED, f"요청 오류 발생: {e}", Colors.RESET)
                
     else:
         # 로컬 파일인 경우
@@ -96,7 +109,7 @@ def upload_image(img_file):
         # 유효한 확장자를 가졌는지 확인 없으면 .jpg추가
         if not Tistory_Read_info.is_valid_image_extension(img_file):
             img_file = Tistory_Read_info.add_image_extension(img_file)
-            print(f"{img_file}으로 변환됨")        
+            print(Colors.BLUE, f"{img_file}으로 변환됨", Colors.RESET)        
 
         # 파일명 재추출
         parsed_url = urlparse(str(img_file))
@@ -117,8 +130,8 @@ def upload_image(img_file):
             replaced_url = new_url.replace(API_URL,'')        
             return replaced_url
         else:
-            print('업로드 실패. 상태 코드:', response.status_code)
-            print('에러 메시지:', response.text)
+            print(Colors.RED, '업로드 실패. 상태 코드:', response.status_code, Colors.RESET)
+            print(Colors.RED, '에러 메시지:', response.text, Colors.RESET)
 
 
 # 고스트에 글 작성
@@ -143,9 +156,9 @@ def write_to_ghost(title='', slug='', tags='', feature_image='', html='', status
 
     # 응답 결과 확인
     if response.status_code == 201:
-        print(f'{slug} 글 작성 성공')
-        print('-'*100)
+        print(Colors.GREEN, f'고스트에 [{slug}] 글 작성 성공', Colors.RESET)
+        print(Colors.BLUE, '-'*99, Colors.RESET)
         # print('Response:', response.json())                
     else:
-        print(f'{slug} 글 작성 실패. 상태 코드:', response.status_code)
-        print('에러 메시지:', response.text)
+        print(Colors.RED, f'{slug} 글 작성 실패. 상태 코드:', response.status_code, Colors.RESET)
+        print(Colors.RED, '에러 메시지:', response.text, Colors.RESET)

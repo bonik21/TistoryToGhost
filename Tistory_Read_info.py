@@ -9,6 +9,19 @@ GHOST_IMG_PATH = App_config.GHOST_IMG_PATH
 GHOST_ATT_PATH = App_config.GHOST_ATT_PATH
 
 
+class Colors:
+    BLACK = '\033[30m'
+    RED = '\033[31m'
+    GREEN = '\033[32m'
+    YELLOW = '\033[33m'
+    BLUE = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN = '\033[36m'
+    WHITE = '\033[37m'
+    UNDERLINE = '\033[4m'
+    RESET = '\033[0m'
+
+
 # 티스토리 백업 폴더에서 slug 리스트 가져오기
 def get_slug_list(directory_path):
     slug_list = os.listdir(directory_path)    
@@ -19,6 +32,9 @@ def get_slug_list(directory_path):
 def get_file_list(slug):
     slug = str(slug) # int로 들어오는 것을 방지
     slug_path = f'{TISTROY_BACKUP_PATH}\{slug}'
+    print()
+    print()
+    print(Colors.BLUE, "-"*40,  f"게시물 [{slug}] 정보", "-"*40, Colors.RESET)    
     if os.path.isdir(slug_path):
         all_files_list = {"slug":slug, "html_file":[], "img_files":[], "att_files":[]}
         
@@ -38,9 +54,9 @@ def get_file_list(slug):
                     # print('파일명 :', item.name, '전체경로 :', item)
                     all_files_list["img_files"].append(item.name)
                     if not is_valid_image_extension(item):
-                        print(f"{item} 유효한 이미지 파일의 확장자가 아닙니다. 자동으로 처리되지만 오류나 나는지 확인이 필요합니다.")
+                        print(Colors.YELLOW, f"주의 : {item} 유효한 이미지 파일의 확장자가 아닙니다. 자동으로 처리되지만 오류가 나는지 확인이 필요합니다.", Colors.RESET)
                     if '?' in item.name or '&' in item.name or '=' in item.name or '#' in item.name:
-                        print(f"{item}에 유효하지 않은 문자가 있습니다. (?, &, =, #)")
+                        print(Colors.RED, f"오류 : {item}에 유효하지 않은 문자가 있습니다. (?, &, =, #) 자동으로 처리되지 않습니다.", Colors.RESET)
                 
         att_path = Path(TISTROY_BACKUP_PATH) / slug / 'file'
         if os.path.isdir(att_path):        
@@ -50,6 +66,10 @@ def get_file_list(slug):
                     # print('파일명 :', item.name, '전체경로 :', item)
                     all_files_list["att_files"].append(item.name)
         
+        wrong_img_path = Path(TISTROY_BACKUP_PATH) / slug / 'file' / 'img'
+        if os.path.isdir(wrong_img_path):
+            print(Colors.RED, f"오류 : img 폴더의 위치가 바르지 않습니다. {slug}/file/img폴더를 {slug}/img로 옮겨야 합니다. 자동으로 처리되지 않습니다.", Colors.RESET)
+
     else:
         all_files_list = f'{TISTROY_BACKUP_PATH}\{slug} 폴더 없음'
 
@@ -58,7 +78,7 @@ def get_file_list(slug):
 
 # 유효한 이미지인지 확인    
 def is_valid_image_extension(file_path):
-    valid_extensions = ['.jpg', '.jpeg', '.png']
+    valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
     file_name, file_extension = os.path.splitext(os.path.basename(file_path))
     return file_extension.lower() in valid_extensions    
 
