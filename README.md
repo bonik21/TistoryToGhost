@@ -62,6 +62,7 @@ pip install requests, beautifulsoup4, pyjwt
 - ini 작성 제대로 되었는지 확인
 - html소스에 따라 오류가 발생할 수 있으므로 TISTROY_BACKUP_PATH에 게시물을 조금씩 옮겨서 실행하는 것을 추천
 
+### 사용 예
 ```
 # 123번 게시물의 파일 확인
 python TistoryToGhost_Cli.py --check 123
@@ -69,17 +70,23 @@ python TistoryToGhost_Cli.py --check 123
 # 123번 게시물 고스트로 포스팅
 python TistoryToGhost_Cli.py 123
 python TistoryToGhost_Cli.py --post 123
+python TistoryToGhost_Cli.py -p 123
 
 # TISTORY_BACKUP_PATH의 모든 게시물 확인
 python TistoryToGhost_Cli.py --check all
+python TistoryToGhost_Cli.py -c all
 
 # TISTORY_BACKUP_PATH의 모든 게시물 포스팅
 python TistoryToGhost_Cli.py all
 python TistoryToGhost_Cli.py --post all
+python TistoryToGhost_Cli.py -p all
+
 
 # TISTORY_BACKUP_PATH의 모든 .html파일에서 키워드 검색
 python TistoryToGhost_Cli.py --search "검색어"
+python TistoryToGhost_Cli.py -s "검색어"
 
 # TISTORY_BACKUP_PATH의 모든 파일 유효성 검사 및 .html 오류 검색
 python TistoryToGhost_Cli.py --search all
+python TistoryToGhost_Cli.py -s all
 ```

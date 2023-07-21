@@ -357,9 +357,6 @@ def remove_daumgift_iframe(old_iframe_code):
     new_iframe_code = ''
     return new_iframe_code
 
-# temp_html = rf"{TISTORY_BACKUP_PATH}\87\87-가요---90's-댄스-(보컬X).html"
-# remove_daumgift(temp_html)
-
 # # 실행
 # temp_object_str1 = '''
 # <object width=0 height="81" width="100%"> <param width=0 name="movie" value="http://player.soundcloud.com/player.swf?url=http%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F5386404%3Fsecret_token%3Ds-UtvX6&amp;secret_url=false"></param> <param width=0 name="allowscriptaccess" value="always"></param> <embed width=0 allowscriptaccess="always" height="81" src="http://player.soundcloud.com/player.swf?url=http%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F5386404%3Fsecret_token%3Ds-UtvX6&amp;secret_url=false" type="application/x-shockwave-flash" width="100%"></embed> </object>
