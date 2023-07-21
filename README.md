@@ -20,7 +20,7 @@
 - `Content API key`로 콘텐츠를 불러올 수는 있지만 그것을 작성할 수는 없음.
 
 
-# 필요한 패키지 설치
+## 필요한 패키지 설치
 ```
 pip install -r requirements.txt
 ```
@@ -28,6 +28,14 @@ pip install -r requirements.txt
 ```
 pip install requests, beautifulsoup4, pyjwt
 ```
+
+## TistoryToGhost.ini 파일을 작성
+- TistoryToGhost-example.ini을 참고해서 TistoryToGhost.ini 파일 작성
+- 한글 포함시 인코딩 확인(UTF-8)
+
+## Tistory_Custom.py 파일을 본인 설정에 맞게 수정
+- 기존 내용을 참고해서 수정
+
 
 # 참고
 ## HTML 손실

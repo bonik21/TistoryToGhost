@@ -86,7 +86,9 @@ def is_valid_image_extension(file_path):
 
 
 # HTML 파일 내부 검색(ini에 사전 정의된 키워드)
-def is_valid_html(html_file, keyword):    
+def is_valid_html(html_file, keyword):
+    if keyword == '':
+        return
     keyword_list = SEARCH_IN_HTML.split(", ")    
     with open(html_file, 'r+', encoding='utf-8') as file:
         html_content = file.read()

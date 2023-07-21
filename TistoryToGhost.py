@@ -1,6 +1,6 @@
 import App_config
 import Ghost_Read_with_content_api, Ghost_Write_in_HTML
-import Tistory_Read_info, Tistory_Edit_HTML
+import Tistory_Read_info, Tistory_Edit_HTML, Tistory_Custom
 
 
 API_URL = App_config.API_URL
@@ -28,13 +28,22 @@ def tistory_to_ghost(slug):
     print('file_list :', file_list)
     html_file_name = file_list["html_file"][0]
     html_file = f'{TISTROY_BACKUP_PATH}\{slug}\{html_file_name}'
-    # HTML 편집(url변환, <p></p>, <script></script>, <style></style> 제거)
-    print(html_file)
-    Tistory_Edit_HTML.convert_url(html_file)
+    # HTML 편집(url변환, <p></p>, <script></script>, <style></style> 제거)        
     Tistory_Edit_HTML.prettier_html(html_file)
 
-    # iframe height 60%로 수정
-    Tistory_Edit_HTML.convert_iframe_height(html_file, '60%')
+    # URL 치환
+    Tistory_Custom.convert_url(html_file)
+
+    # 유튜브, 사운드클라우드 코드 수정(embed, iframe 재작성)
+    Tistory_Edit_HTML.rewrite_youtube_iframe(html_file)
+    Tistory_Edit_HTML.rewrite_youtube_embed(html_file)
+    Tistory_Edit_HTML.rewrite_soundcloud_embed(html_file)
+
+    # 다음 밀어주기 제거
+    Tistory_Edit_HTML.remove_daumgift(html_file)
+
+    # iframe width, height 제거(미사용)
+    # Tistory_Edit_HTML.remove_iframe_width_height(html_file)
 
     # 이미지 및 첨부파일 처리
     if IMAGE_METHOD == 'Upload':
@@ -56,6 +65,7 @@ def tistory_to_ghost(slug):
     if Ghost_Read_with_content_api.is_slug_in_Ghost(slug):
         print(Colors.GREEN, f"[{slug}]은(는) 이미 고스트에 포스팅되어 있습니다.", Colors.RESET)
         return
+    
     upload_data = Tistory_Edit_HTML.extract_html_info(html_file)
     
     Ghost_Write_in_HTML.write_to_ghost(

@@ -36,7 +36,7 @@ def is_slug_in_Ghost(slug):
         return True
 
     else:
-        print(Colors.RED, '오류 : 글 불러오기 실패. 상태 코드:', response.status_code, Colors.RESET)
+        # print(Colors.RED, '오류 : 글 불러오기 실패. 상태 코드:', response.status_code, Colors.RESET)
         # print('에러 메시지:', response.text)
         return False  
 

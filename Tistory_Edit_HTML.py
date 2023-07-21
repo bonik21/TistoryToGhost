@@ -3,8 +3,8 @@ import os
 from bs4 import BeautifulSoup
 import Ghost_Write_in_HTML
 from datetime import datetime, timedelta
-from urllib.parse import urlparse
-import Tistory_Category_to_Slug
+from urllib.parse import urlparse, unquote
+import Tistory_Custom
 import re
 
 
@@ -79,7 +79,7 @@ def extract_html_info(html_file):
     category_element = soup.find("p", class_="category")
     category_raw = category_element.text if category_element else ""
     category_raw = category_raw.strip()
-    category = Tistory_Category_to_Slug.convert_category_to_slug(category_raw)    
+    category = Tistory_Custom.convert_category_to_slug(category_raw)    
     print(f"티스토리 카테고리 [{category_raw}]을(를) 고스트 tag [{category}](으)로 변경합니다.")    
 
     # 태그 <div class="tags"></div> 내용 가져오기
@@ -145,6 +145,7 @@ def convert_url(html_file):
         html_content = file.read()    
     html_content = html_content.replace('http://fevernigga.tistory.com', 'https://bonik.me')
     html_content = html_content.replace('https://fevernigga.tistory.com', 'https://bonik.me')
+    html_content = html_content.replace('http://', 'https://')
     with open(html_file, 'w', encoding='utf-8') as file:
         file.write(html_content)
 
@@ -216,22 +217,41 @@ def convert_to_utc(input_time):
     return output_time
 
 
-# HTML파일 : iframe height 편집, ghost에서 height의 px이 %로 인식됨
-def convert_iframe_height(html_file, height):
-    height = str(height)
+# HTML파일 : iframe width, height 제거(미사용)
+def remove_iframe_width_height(html_file):    
     with open(html_file, 'r+', encoding='utf-8') as file:
         html_content = file.read()
     soup = BeautifulSoup(html_content, "html.parser")
     for iframe_tag in soup.find_all("iframe"):
         if iframe_tag:
-            original_height = iframe_tag.get('height')            
-            iframe_tag["height"] = height
+            iframe_tag.attrs.pop('height', None)
+            iframe_tag.attrs.pop('width', None)
     indented_html = str(soup)            
     with open(html_file, "w", encoding="utf-8") as file:
         file.write(indented_html)             
 
 
-# HTML파일 : Youtube object to iframe
+# HTML파일 : 유튜브 iframe 태그에서 Youtube id추출 후 iframe 새로 작성
+def rewrite_youtube_iframe(html_file):    
+    with open(html_file, 'r', encoding='utf-8') as file:
+        html_content = file.read()
+    new_html_content = html_content
+
+    for iframe_tag in re.finditer(r'<iframe.*?>.*?</iframe>', html_content):
+        src_url = re.search(r'src="(.*?)"', iframe_tag.group(0))
+        if src_url:
+            video_id_match = re.search(r'youtube\.com/embed/([a-zA-Z0-9_-]+)', src_url.group(1))
+            if video_id_match:
+                video_id = video_id_match.group(1)
+                # 기존 iframe_tag 텍스트를 새로운 태그로 대체
+                new_iframe_tag = f'<iframe src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
+                new_html_content = new_html_content.replace(iframe_tag.group(0), new_iframe_tag)
+
+    with open(html_file, 'w', encoding='utf-8') as file:
+        file.write(new_html_content)
+
+
+# Code : Youtube object to iframe 형식으로 변환
 def convert_youtube_embed(old_embed_code):
     # 유튜브 비디오 ID를 추출합니다.
     video_id_match = re.search(r'youtube\.com/v/([a-zA-Z0-9_-]+)', old_embed_code)
@@ -240,19 +260,115 @@ def convert_youtube_embed(old_embed_code):
         return old_embed_code
 
     video_id = video_id_match.group(1)
-    new_embed_code = f'<iframe width="100%" height="60%" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
+    new_embed_code = f'<iframe src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
     return new_embed_code 
 
 
-# temp_html = f"{TISTORY_BACKUP_PATH}\906\906-음악인-권리찾기-[페어뮤직-코리아]-공연-안내.html"
-# prettier_html(temp_html)
+# HTML파일 : 오래된 Youtube object 태그에서 id추출 후 iframe 새로 작성
+def rewrite_youtube_embed(html_file):    
+    with open(html_file, 'r', encoding='utf-8') as file:
+        html_content = file.read()
+    new_html_content = html_content
+
+    for object_tag in re.finditer(r'<object.*?>.*?</object>', html_content):        
+        if object_tag:
+            object_str = object_tag.group(0)
+            new_object_tag = convert_youtube_embed(object_str)            
+            new_html_content = new_html_content.replace(object_str, new_object_tag)
+
+    with open(html_file, 'w', encoding='utf-8') as file:
+        file.write(new_html_content)
 
 
-# # 유튜브 변환 테스트
-# # 예전 유튜브 embed 코드
-# old_embed_code = '<object style="height: 344px; width: 425px"><param name="movie" value="http://www.youtube.com/v/OEuZSgpxQtY?version=3"><param name="allowFullScreen" value="true"><param name="allowScriptAccess" value="always"><embed src="http://www.youtube.com/v/OEuZSgpxQtY?version=3" type="application/x-shockwave-flash" allowfullscreen="true" allowScriptAccess="always" width="515" height="417"></object>'
+# HTML파일 : 오래된 Soundcloud object 태그에서 id추출 후 iframe 새로 작성
+def rewrite_soundcloud_embed(html_file):
+    with open(html_file, 'r', encoding='utf-8') as file:
+        html_content = file.read()
+    new_html_content = html_content
 
-# # 변환된 최신 embed 코드
-# new_embed_code = convert_youtube_embed(old_embed_code)
-# print(new_embed_code)
+    for object_tag in re.finditer(r'<object.*?>.*?</object>', html_content):        
+        if object_tag:
+            object_str = object_tag.group(0)
+            new_object_tag = convert_soundcloud_embed(object_str)            
+            new_html_content = new_html_content.replace(object_str, new_object_tag)
+
+    with open(html_file, 'w', encoding='utf-8') as file:
+        file.write(new_html_content)
+
+
+# Code : Soundcloud object to iframe 형식으로 변환
+def convert_soundcloud_embed(old_embed_code):
+    # src 값 추출
+    src_match = re.search(r'src="(.*?)"', old_embed_code)
+    if not src_match:
+        print("사운드클라우드 embed 코드에서 src 값을 찾지 못함")
+        return old_embed_code
+    src = src_match.group(1)    
+    decoded_src = unquote(src)
+
+    # SoundCloud 트랙 ID 추출
+    track_id_match = re.search(r'tracks/(\d+)', decoded_src)
+    if not track_id_match:
+        print("사운드클라우드 track id를 찾지 못함")
+        return old_embed_code
+
+    track_id = track_id_match.group(1)
+
+    # 새로운 embed 코드 생성
+    new_embed_code = f'<iframe width="100%" scrolling="no" frameborder="no" allow="autoplay" ' \
+                     f'src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{track_id}' \
+                     f'&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&' \
+                     f'show_reposts=false&show_teaser=true&visual=true"></iframe>'
+    return new_embed_code
+
+
+# HTML파일 : 다음 밀어주기 제거
+def remove_daumgift(html_file):
+    with open(html_file, 'r', encoding='utf-8') as file:
+        html_content = file.read()
+    new_html_content = html_content
+
+    for iframe_tag in re.finditer(r'<iframe.*?>.*?</iframe>', html_content):        
+        if iframe_tag:
+            iframe_str = iframe_tag.group(0)
+            new_iframe_tag = remove_daumgift_iframe(iframe_str)            
+            new_html_content = new_html_content.replace(iframe_str, new_iframe_tag)
+
+    with open(html_file, 'w', encoding='utf-8') as file:
+        file.write(new_html_content)
+
+
+# Code : iframe이 다음 밀어주기인 경우 빈값 리턴
+def remove_daumgift_iframe(old_iframe_code):
+    # src 값 추출
+    src_match = re.search(r'src="(.*?)"', old_iframe_code)
+    if not src_match:
+        print("iframe코드에서 src 값을 찾지 못함")
+        return old_iframe_code
+    src = src_match.group(1)    
+    decoded_src = unquote(src)
+
+    # SoundCloud 트랙 ID 추출
+    track_id_match = re.search(r'gift.blog.daum.net', decoded_src)
+    if not track_id_match:        
+        return old_iframe_code
+
+    # 새로운 iframe 코드 생성
+    new_iframe_code = ''
+    return new_iframe_code
+
+# temp_html = rf"{TISTORY_BACKUP_PATH}\87\87-가요---90's-댄스-(보컬X).html"
+# remove_daumgift(temp_html)
+
+# # 실행
+# temp_object_str1 = '''
+# <object width=0 height="81" width="100%"> <param width=0 name="movie" value="http://player.soundcloud.com/player.swf?url=http%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F5386404%3Fsecret_token%3Ds-UtvX6&amp;secret_url=false"></param> <param width=0 name="allowscriptaccess" value="always"></param> <embed width=0 allowscriptaccess="always" height="81" src="http://player.soundcloud.com/player.swf?url=http%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F5386404%3Fsecret_token%3Ds-UtvX6&amp;secret_url=false" type="application/x-shockwave-flash" width="100%"></embed> </object>
+# '''
+
+# temp_object_str2 = '''
+# <object width=0 height="81" width="100%"> <param width=0 name="movie" value="http://player.soundcloud.com/player.swf?url=http%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F4942788%3Fsecret_token%3Ds-yXd0a&amp;secret_url=false"></param> <param width=0 name="allowscriptaccess" value="always"></param> <embed width=0 allowscriptaccess="always" height="81" src="http://player.soundcloud.com/player.swf?url=http%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F4942788%3Fsecret_token%3Ds-yXd0a&amp;secret_url=false" type="application/x-shockwave-flash" width="100%"></embed> </object>
+# '''
+
+# result_embed_code = convert_soundcloud_embed(temp_object_str1)
+# print(result_embed_code)
 

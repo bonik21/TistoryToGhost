@@ -1,3 +1,14 @@
+# HTML파일 : a href 원하는 주소 변환(커스텀)
+def convert_url(html_file):
+    with open(html_file, 'r', encoding='utf-8') as file:
+        html_content = file.read()    
+    html_content = html_content.replace('http://fevernigga.tistory.com', 'https://bonik.me')
+    html_content = html_content.replace('https://fevernigga.tistory.com', 'https://bonik.me')
+    html_content = html_content.replace('http://', 'https://')
+    with open(html_file, 'w', encoding='utf-8') as file:
+        file.write(html_content)
+
+
 # "원래 티스토리 카테고리": "원하는 고스트 tag" 띄워쓰기 정확해야 함(커스텀)
 def convert_category_to_slug(category):
     mod_keywords = {"BoniK's WORKS/발매앨범": "BoniK's WORKS",
