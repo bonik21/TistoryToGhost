@@ -1,12 +1,15 @@
 import App_config
-import Ghost_Read_with_content_api, Ghost_Write_in_HTML
+import Ghost_Read_with_content_api, Ghost_Read_with_admin_api, Ghost_Write_in_HTML
 import Tistory_Read_info, Tistory_Edit_HTML, Tistory_Custom
 
 
 API_URL = App_config.API_URL
 TISTROY_BACKUP_PATH = App_config.TISTROY_BACKUP_PATH
 IMAGE_METHOD = App_config.IMAGE_METHOD
+# 티스토리백업 폴더의 slug_list
 slug_list = Tistory_Read_info.get_slug_list(TISTROY_BACKUP_PATH)
+# 
+ghost_slug_list = Ghost_Read_with_content_api.read_all_ghost_slug()
 
 
 class Colors:
@@ -81,7 +84,7 @@ def tistory_to_ghost(slug):
 
 # 작성중 : 티스토리에서 고스트로 옮기기 (티스토리 백업 폴더 전체)
 def tistory_to_ghost_all():
-    for slug in slug_list:
+    for slug in ghost_slug_list:
         tistory_to_ghost(slug)
     return
 
@@ -116,3 +119,10 @@ def tistory_to_ghost_all():
 
 # # 전체 포스팅
 # tistory_to_ghost_all()
+
+
+# 고스트에 포스팅된 게시물 중 meta decription 없는 것
+# for slug in ghost_slug_list:    
+#     meta_desc = Ghost_Read_with_admin_api.if_exist_meta_desc(slug)
+#     if meta_desc is False:
+#         print(f'{slug}: {meta_desc}')
