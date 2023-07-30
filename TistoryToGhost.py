@@ -121,7 +121,7 @@ def tistory_to_ghost_all():
 # tistory_to_ghost_all()
 
 
-# 고스트에 포스팅된 게시물 중 meta decription 없는 것
+# # 고스트에 포스팅된 게시물 중 meta decription 없는 것
 # for slug in ghost_slug_list:    
 #     meta_desc = Ghost_Read_with_admin_api.if_exist_meta_desc(slug)
 #     if meta_desc is False:
