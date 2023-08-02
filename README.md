@@ -1,6 +1,6 @@
 # TistoryToGhost
-티스토리 포스팅 자료를 고스트로 이전하는 파이썬 스크립트
-고스트 CMS : https://ghost.org/
+- 티스토리 포스팅 자료를 고스트로 이전하는 파이썬 스크립트
+- 고스트 CMS : https://ghost.org/
 
 # 준비물
 ## 티스토리 데이터 백업 파일
@@ -58,11 +58,12 @@ pip install requests, beautifulsoup4, pyjwt
 - 첨부파일은 복사 밖에 지원하지 않음 (서버가 외부에 있을 경우 rclone등으로 서버의 스토리지를 로컬에 마운트 해야 함)
 - 첨부파일을 수동으로 복사하려면 file폴더를 미리 수동으로 복사한 후에 백업 폴더에서 삭제 후 스크립트 실행
 
+
 # CLI 사용법(윈도우에서만 테스트 됨)
 - ini 작성 제대로 되었는지 확인
 - html소스에 따라 오류가 발생할 수 있으므로 TISTROY_BACKUP_PATH에 게시물을 조금씩 옮겨서 실행하는 것을 추천
 
-### 사용 예
+## CLI 사용 예
 ```
 # 123번 게시물의 파일 확인
 python TistoryToGhost_Cli.py --check 123
