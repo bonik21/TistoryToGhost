@@ -4,6 +4,19 @@ import jwt
 from datetime import datetime as date
 
 
+class Colors:
+    BLACK = '\033[30m'
+    RED = '\033[31m'
+    GREEN = '\033[32m'
+    YELLOW = '\033[33m'
+    BLUE = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN = '\033[36m'
+    WHITE = '\033[37m'
+    UNDERLINE = '\033[4m'
+    RESET = '\033[0m'
+
+
 # 필요한 key 불러오기
 ADMIN_API = App_config.ADMIN_API
 API_URL = App_config.API_URL
@@ -153,6 +166,21 @@ def read_key_list_ghost_content():
         print('에러 메시지:', response.text)
 
 
+# slug에 해당하는 meta description이 있는지 확인
+def if_exist_meta_desc(slug):    
+    try:
+        meta_description = read_slug_ghost_content(slug)[0]["meta_description"]                
+        if type(meta_description) is str:
+                # print(f'{slug} :', meta_description[:20], '...')
+                return True
+        elif meta_description is None:
+            return False
+        else:
+            return False
+    except TypeError as e:
+        print(e)
+        return False
+
 
 # 아래는 사용 예
 
@@ -181,3 +209,10 @@ def read_key_list_ghost_content():
 # print(slug_ghost_content)
 
 
+# 특정 고스트 콘텐츠의 meta_description 확인(slug)
+# slug_ghost_content = read_slug_ghost_content('975')
+# print(slug_ghost_content[0]["meta_description"])
+
+
+# meta description이 있는지 확인
+# print(if_exist_meta_desc('927'))

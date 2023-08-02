@@ -89,6 +89,32 @@ def read_all_ghost_content_simple():
         print(Colors.RED,'에러 메시지:', response.text, Colors.RESET)
 
 
+# 모든 게시물 출력 : 슬러그만 출력
+def read_all_ghost_slug():
+    endpoint = f'{API_URL}/ghost/api/content/posts/?limit=all'
+    headers = {'Accept-Version': 'v5.0'}
+    params = {'key': CONTENT_API}
+
+    response = requests.get(endpoint, headers=headers, params=params)
+    all_ghost_content = []
+
+    # 응답 결과 확인
+    if response.status_code == 200:    
+        posts_data = response.json()
+        posts = posts_data['posts']
+
+        for post in posts:                
+            post_slug = post['slug']            
+            # this_post = {"slug": post_slug}
+            all_ghost_content.append(post_slug)         
+
+        return all_ghost_content    
+
+    else:
+        print(Colors.RED, '오류 : 글 불러오기 실패. 상태 코드:', response.status_code, Colors.RESET)
+        print(Colors.RED,'에러 메시지:', response.text, Colors.RESET)
+
+
 # 사용가능한 key리스트 출력
 
 def read_key_list_ghost_content():
@@ -132,6 +158,11 @@ def read_key_list_ghost_content():
 # # 모든 고스트 콘텐츠 확인(슬러그, 제목, 내용만 표시)
 # all_ghost_content_simple = read_all_ghost_content_simple()
 # print(all_ghost_content_simple)
+
+
+# # 모든 고스트 콘텐츠 확인(슬러그만 표시)
+# all_ghost_slug = read_all_ghost_slug()
+# print(all_ghost_slug)
 
 
 # # 고스트 게시물 수 확인
